@@ -438,15 +438,21 @@ class Sdk {
 
     suspend fun getAttendance(startDate: LocalDate, endDate: LocalDate): List<Attendance> = withContext(Dispatchers.IO) {
         when (mode) {
+
+            //Mode.SCRAPPER -> scrapper.getAttendance(startDate, endDate).mapAttendance()
+            //Mode.HYBRID, Mode.HEBE -> hebe.getCompletedLessons(studentId, startDate, endDate).mapAttendance()
+
             Mode.SCRAPPER -> scrapper.getAttendance(startDate, endDate).mapAttendance()
-            Mode.HYBRID, Mode.HEBE -> hebe.getCompletedLessons(studentId, startDate, endDate).mapAttendance()
+            Mode.HYBRID -> scrapper.getAttendance(startDate, endDate).mapAttendance()
+            Mode.HEBE -> hebe.getCompletedLessons(studentId, startDate, endDate).mapAttendance()
         }
     }
 
     suspend fun getAttendanceSummary(subjectId: Int? = -1, startDate: LocalDate, endDate: LocalDate): List<AttendanceSummary> = withContext(Dispatchers.IO) {
         when (mode) {
             Mode.SCRAPPER -> scrapper.getAttendanceSummary(subjectId).mapAttendanceSummary()
-            Mode.HYBRID, Mode.HEBE ->
+            Mode.HYBRID -> scrapper.getAttendanceSummary(subjectId).mapAttendanceSummary()
+            Mode.HEBE ->
                 hebe
                     .getAttendanceSummaryForWholeYear(
                         pupilId = studentId,
@@ -480,8 +486,8 @@ class Sdk {
 
     suspend fun getGrades(semesterId: Int): Grades = withContext(Dispatchers.IO) {
         when (mode) {
-            Mode.SCRAPPER -> scrapper.getGrades(semesterId).mapGrades()
-            Mode.HYBRID, Mode.HEBE -> Triple(
+            Mode.HYBRID,Mode.SCRAPPER -> scrapper.getGrades(semesterId).mapGrades()
+            Mode.HEBE -> Triple(
                 hebe.getGrades(semesterId),
                 hebe.getGradesSummary(semesterId),
                 hebe.getGradesAverage(semesterId),
@@ -694,7 +700,9 @@ class Sdk {
     suspend fun getTimetable(start: LocalDate, end: LocalDate): Timetable = withContext(Dispatchers.IO) {
         when (mode) {
             Mode.SCRAPPER -> scrapper.getTimetable(start, end).mapTimetableFull(registerTimeZone)
-            Mode.HYBRID, Mode.HEBE -> hebe.getSchedule(studentId, start, end).mapTimetableFull(registerTimeZone)
+            //Mode.HYBRID  -> scrapper.getTimetable(start, end).mapTimetableFull(registerTimeZone)
+            Mode.HYBRID  -> hebe.getSchedule(studentId, start, end).mapTimetableFull(registerTimeZone)
+            Mode.HEBE -> hebe.getSchedule(studentId, start, end).mapTimetableFull(registerTimeZone)
         }
     }
 
